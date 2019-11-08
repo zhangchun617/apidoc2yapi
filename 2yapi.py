@@ -6,7 +6,7 @@ import re
 
 def callerror():
     print('非法输入!')
-    print(r'example : python 2yapi.py -s "d:/myapi-doc/api_data.json" -d "./yapi_api_data.json"')
+    print(r'example : python 2yapi.py -s "d:\myapi-doc\api_data.json" -d "d:\yapi_api_data.json"')
     print(r'********************************************')
 def checkArgv():
     if len(sys.argv) > 1:
@@ -40,11 +40,16 @@ def api_data_parameter2yapi(api_data_parameter,method):
     properties = {}
     required = []
     querylist = []
+    if api_data_parameter == {}:
+        return []
+    if '请求参数' not in api_data_parameter['fields']:
+        return []
     for field in api_data_parameter['fields']['请求参数']:
         type = field['type'].lower()
         description = re.sub(r'<p>|</p>','',field['description'])
         key = field['field']
-        if method == 'post':
+        #兼容method == 'post/get'这种写法,按照post逻辑走流程
+        if  'post' in method:
             if field['optional'] is True:
                 required.append(key)
             
@@ -72,10 +77,16 @@ def api_data_parameter2yapi(api_data_parameter,method):
         "required": required
     }
     yapi_reqquery = querylist
-    body = yapi_reqquery if method == 'get' else yapi_reqbody
-    return body
+    if method == 'get':
+        return yapi_reqquery
+    elif method == 'post':
+        return  yapi_reqbody
+    else:
+        return  yapi_reqbody
     
 def api_data_success2yapi(api_data_success):
+    if 'fields' not in api_data_success.keys():
+        return {}
     properties = {
             "success":{'type':'number'},
             "data":{
@@ -105,14 +116,16 @@ def api_data_success2yapi(api_data_success):
     }
     return yapi_rsbody
 def api_data_example2yapi(api_data_example):
+    if api_data_example == {}:
+        return ""
     if len(api_data_example) > 0:
-        title = api_data_example[0]['title']
+        #title = api_data_example[0]['title']
         #content 是一个json字符串
         yapi_content = api_data_example[0]['content']
-        type = api_data_example[0]['type']
+        #type = api_data_example[0]['type']
         return yapi_content
     else:
-        return None
+        return ""
 
 
 def api_data2yapi(api_data):
@@ -137,27 +150,34 @@ def api_data2yapi(api_data):
           },
         '''
         api_data_type = data1['type']
-        api_data_url = data1['url']
+        #兼容非标准格式method的写法，如post/get
+        method = 'POST' if 'post' in api_data_type else 'GET'
+        api_data_url = data1['url'] if data1['url'][0] == '/' else "/"+data1['url']
         api_data_title = data1['title']
         api_data_group = data1['group']
         api_data_groupTitle = data1['groupTitle']
-        api_data_parameter = data1['parameter']
-        api_data_success = data1['success']
-        api_data_example = data1['success']['examples']
+        api_data_parameter = data1['parameter'] if 'parameter' in data1 else {}
+        api_data_success = data1['success'] if 'success' in data1 else {}
+        api_data_example = api_data_success['examples'] if 'examples' in api_data_success else {}
         #可能用不上的字段
-        api_data_filename = data1['filename']
-        api_data_version = data1['version']
-        api_data_name = data1['name']
+        #api_data_filename = data1['filename']
+        #api_data_version = data1['version']
+        #api_data_name = data1['name']
         
         #将reqbody和resbody转为yapi需要的格式
-        if api_data_type == 'post':
-            yapi_reqbody = api_data_parameter2yapi(api_data_parameter,api_data_type)
-            yapi_reqquery = []
-            req_body_type = 'json'
-        else:
+
+        if api_data_type == 'get':
             yapi_reqbody = {}
             yapi_reqquery = api_data_parameter2yapi(api_data_parameter,api_data_type)
             req_body_type = 'form'
+        else:
+            yapi_reqbody = api_data_parameter2yapi(api_data_parameter,api_data_type)
+            yapi_reqquery = []
+            req_body_type = 'json'
+        '''
+        else:
+            break
+        '''
         
         yapi_rsbody = api_data_success2yapi(api_data_success)
         yapi_content = api_data_example2yapi(api_data_example)
@@ -195,7 +215,7 @@ def api_data2yapi(api_data):
                 "up_time": 1572340396,
                 "title": api_data_title,
                 "path": api_data_url,
-                "method": api_data_type.upper(),
+                "method": method,
                 "req_query":yapi_reqquery,
                 "req_params": [],
                 "req_headers":[],
@@ -227,8 +247,10 @@ if __name__ == '__main__':
     argvs = checkArgv()
     try:
         #接收输入输出文件路径
-        sFile = argvs['s'] if 's' in argvs else None
-        dFile = argvs['d'] if 'd' in argvs else './yapi_api_data.json'
+        #sFile = argvs['s'] if 's' in argvs else None
+        #dFile = argvs['d'] if 'd' in argvs else './yapi_api_data.json'
+        sFile = r"D:\mywork\03 学习资料\tmp\py\self\yapi_project\myapi-doc-zhzlbackend\api_data.json"
+        dFile = r".\api-yapi-zhzlbackend.json"
         #读取apidoc
         data = open(sFile,'r',encoding='utf-8')
         #格式转换
