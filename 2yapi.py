@@ -119,11 +119,11 @@ def api_data_example2yapi(api_data_example):
     if api_data_example == {}:
         return ""
     if len(api_data_example) > 0:
-        #title = api_data_example[0]['title']
         #content 是一个json字符串
-        yapi_content = api_data_example[0]['content']
-        #type = api_data_example[0]['type']
-        return yapi_content
+        yapi_example = "<p>返回示例：<br>"+api_data_example[0]['content'].replace('\n','<br>\n').replace(' ','&nbsp;')+"</p>\n"
+        #yapi_example = api_data_example[0]['content']
+        #yapi_example = json.dumps(json.loads(example,encoding='utf-8'),ensure_ascii=False,indent=4)
+        return yapi_example
     else:
         return ""
 
@@ -180,7 +180,7 @@ def api_data2yapi(api_data):
         '''
         
         yapi_rsbody = api_data_success2yapi(api_data_success)
-        yapi_content = api_data_example2yapi(api_data_example)
+        yapi_example = api_data_example2yapi(api_data_example)
         
         #分组模板moudle1
         moudle1 = {
@@ -219,12 +219,13 @@ def api_data2yapi(api_data):
                 "req_query":yapi_reqquery,
                 "req_params": [],
                 "req_headers":[],
-                "req_body_other": json.dumps(yapi_reqbody,ensure_ascii=False),
+                "req_body_other": json.dumps(yapi_reqbody,ensure_ascii=False,sort_keys=True),
                 "req_body_type": req_body_type,
                 "req_body_form": [],
-                "res_body": json.dumps(yapi_rsbody,ensure_ascii=False),
+                "res_body": json.dumps(yapi_rsbody,ensure_ascii=False,sort_keys=True),
                 "res_body_type": "json",
-                "desc":yapi_content
+                "desc":yapi_example,
+                "markdown":yapi_example
         }
         #根据api_data构造yapi_data
         #moudel2(yapi接口)===>moudle1(yapi分组)===>moudle0(装yapi分组的list)
@@ -247,15 +248,15 @@ if __name__ == '__main__':
     argvs = checkArgv()
     try:
         #接收输入输出文件路径
-        #sFile = argvs['s'] if 's' in argvs else None
-        #dFile = argvs['d'] if 'd' in argvs else './yapi_api_data.json'
-        sFile = r"D:\mywork\03 学习资料\tmp\py\self\yapi_project\myapi-doc-zhzlbackend\api_data.json"
-        dFile = r".\api-yapi-zhzlbackend.json"
+        sFile = argvs['s'] if 's' in argvs else None
+        dFile = argvs['d'] if 'd' in argvs else './yapi_api_data.json'
+        #sFile = r"D:\mywork\03 学习资料\tmp\py\self\yapi_project\myapi-doc-zhzlbackend\api_data.json"
+        #dFile = r".\api-yapi-zhzlbackend.json"
         #读取apidoc
         data = open(sFile,'r',encoding='utf-8')
         #格式转换
         moudel0 = api_data2yapi(json.load(data))
-        api_yapi_data = json.dumps(moudel0,ensure_ascii=False,indent=4)
+        api_yapi_data = json.dumps(moudel0,ensure_ascii=False,indent=4,sort_keys=True)
         #输出新文件
         f = open(dFile,'w',encoding='utf-8')
         f.write(api_yapi_data)
