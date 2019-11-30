@@ -1,0 +1,16 @@
+{
+  "name": "基层治理平台API文档",
+  "version": "1.0.0",
+  "description": "COPYRIGHT@2019 航天神舟智慧系统技术有限公司 ALL RIGHT RESERVED.",
+  "title": "CIG基层治理平台API文档 - 航天神舟智慧系统技术有限公司",
+  "url": "https://test-zhzl.spacecig.com/zhzlApp",
+  "sampleUrl": false,
+  "defaultVersion": "0.0.0",
+  "apidoc": "0.3.0",
+  "generator": {
+    "name": "apidoc",
+    "time": "2019-10-31T10:04:13.231Z",
+    "url": "http://apidocjs.com",
+    "version": "0.17.7"
+  }
+}
