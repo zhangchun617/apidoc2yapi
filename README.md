@@ -5,3 +5,5 @@ Only supports GET and POST requests in the Http protocol API.
 example:
     
     python 2yapi.py -s "d:\myapi-doc\api_data.json" -d "d:\yapi_api_data.json"
+
+2019/12/02 增加了将apidoc接口文件转成jmeter脚本文件的功能。没有做参数化,需要在apidoc2jmeter.py中指定源/目标文件来使用。
